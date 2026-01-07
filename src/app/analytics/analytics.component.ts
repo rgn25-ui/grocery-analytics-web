@@ -15,8 +15,11 @@ export class AnalyticsComponent implements OnInit {
 userId: string = 'shared-user';  // Hardcoded!
 searchQuery: string = '';
 selectedItem: string = '';
+displayName: string = '';  // NEW: For showing search term + variant count
 
 searchResults: string[] = [];
+matchedVariants: string[] = [];  // All found variants
+selectedVariants: Set<string> = new Set();  // NEW: User-selected variants
 analytics: ItemPurchaseAnalytics | null = null;
 purchaseDates: PurchaseDate[] = [];
 
@@ -61,32 +64,87 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
 
     this.loading = true;
     this.error = null;
+    this.matchedVariants = [];
+    this.selectedVariants.clear();
 
-    // Load frequency analytics
-    this.analyticsService.getItemFrequency(this.userId, this.selectedItem)
+    // First, get all matching variants
+    this.analyticsService.searchItems(this.userId, this.selectedItem)
       .subscribe({
-        next: (data) => {
-          this.analytics = data;
-          this.loading = false;
+        next: (variants) => {
+          this.matchedVariants = variants;
+          // By default, select all variants
+          variants.forEach(v => this.selectedVariants.add(v));
+
+          // Then load analytics for selected variants
+          this.loadAnalyticsData();
         },
         error: (err) => {
-          console.error('Analytics error:', err);
-          this.error = 'Kunne ikke hente data. Tjek din forbindelse.';
-          this.loading = false;
-        }
-      });
-
-    // Load purchase dates
-    this.analyticsService.getPurchaseDates(this.userId, this.selectedItem)
-      .subscribe({
-        next: (dates) => {
-          this.purchaseDates = dates;
-        },
-        error: (err) => {
-          console.error('Purchase dates error:', err);
+          console.error('Variants search error:', err);
+          this.loadAnalyticsData();
         }
       });
   }
+
+  toggleVariant(variant: string): void {
+    if (this.selectedVariants.has(variant)) {
+      this.selectedVariants.delete(variant);
+    } else {
+      this.selectedVariants.add(variant);
+    }
+
+    // Reload analytics with new selection
+    if (this.selectedVariants.size > 0) {
+      this.loadAnalyticsData();
+    } else {
+      // If no variants selected, clear analytics
+      this.analytics = null;
+      this.purchaseDates = [];
+    }
+  }
+
+  isVariantSelected(variant: string): boolean {
+    return this.selectedVariants.has(variant);
+  }
+
+  private loadAnalyticsData(): void {
+  if (this.selectedVariants.size === 0) {
+    return;
+  }
+
+  const selectedItems = Array.from(this.selectedVariants);
+
+  // Update display name based on selection
+  if (selectedItems.length === 1) {
+    this.displayName = selectedItems[0];
+  } else {
+    this.displayName = `${this.selectedItem} (${selectedItems.length} varianter)`;
+  }
+
+  // Load frequency analytics for selected variants
+  this.analyticsService.getItemsFrequency(this.userId, selectedItems)
+    .subscribe({
+      next: (data) => {
+        this.analytics = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Analytics error:', err);
+        this.error = 'Kunne ikke hente data. Tjek din forbindelse.';
+        this.loading = false;
+      }
+    });
+
+  // Load purchase dates for selected variants
+  this.analyticsService.getItemsPurchaseDates(this.userId, selectedItems)
+    .subscribe({
+      next: (dates) => {
+        this.purchaseDates = dates;
+      },
+      error: (err) => {
+        console.error('Purchase dates error:', err);
+      }
+    });
+}
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -105,5 +163,7 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
     this.analytics = null;
     this.purchaseDates = [];
     this.searchResults = [];
+    this.matchedVariants = [];
+    this.selectedVariants.clear();
   }
 }

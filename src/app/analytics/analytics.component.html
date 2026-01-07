@@ -43,7 +43,28 @@
 
   <!-- Analytics Display -->
   <div class="analytics-content" *ngIf="analytics && !loading">
-    <h2>{{ analytics.itemName }}</h2>
+    <h2>{{ displayName }}</h2>
+
+    <!-- Matched Variants Section (NEW) -->
+    <div class="variants-section" *ngIf="matchedVariants.length > 1">
+      <h3>Fundne varianter ({{ matchedVariants.length }})</h3>
+      <p class="variants-instruction">Klik for at vælge/fravælge varianter:</p>
+      <div class="variants-list">
+        <span
+          class="variant-tag"
+          *ngFor="let variant of matchedVariants"
+          [class.selected]="isVariantSelected(variant)"
+          [class.deselected]="!isVariantSelected(variant)"
+          (click)="toggleVariant(variant)">
+          <span class="variant-icon">{{ isVariantSelected(variant) ? '✓' : '○' }}</span>
+          {{ variant }}
+        </span>
+      </div>
+      <p class="variants-note">
+        Analysen viser data for {{ selectedVariants.size }} valgte
+        {{ selectedVariants.size === 1 ? 'variant' : 'varianter' }}
+      </p>
+    </div>
 
     <!-- Frequency Cards -->
     <div class="frequency-grid">
@@ -83,9 +104,14 @@
           class="date-item">
           <div class="date-main">
             <span class="date-text">{{ formatDate(purchase.purchaseDate) }}</span>
-            <span class="quantity-badge" *ngIf="purchase.quantity > 1">
-              {{ purchase.quantity }}x
-            </span>
+            <div class="date-badges">
+              <span class="item-name-badge" *ngIf="matchedVariants.length > 1">
+                {{ purchase.itemName }}
+              </span>
+              <span class="quantity-badge" *ngIf="purchase.quantity > 1">
+                {{ purchase.quantity }}x
+              </span>
+            </div>
           </div>
           <div class="date-list-name">{{ purchase.listName }}</div>
         </div>

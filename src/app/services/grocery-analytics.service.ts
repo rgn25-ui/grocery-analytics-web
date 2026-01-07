@@ -27,11 +27,29 @@ constructor(private http: HttpClient) {}
     return this.http.get<ItemPurchaseAnalytics>(`${this.API_URL}/item-frequency`, { params });
   }
 
+  // NEW: Get frequency for multiple items
+  getItemsFrequency(userId: string, itemNames: string[]): Observable<ItemPurchaseAnalytics> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('itemNames', itemNames.join(','));
+
+    return this.http.get<ItemPurchaseAnalytics>(`${this.API_URL}/items-frequency`, { params });
+  }
+
   getPurchaseDates(userId: string, itemName: string): Observable<PurchaseDate[]> {
     const params = new HttpParams()
       .set('userId', userId)
       .set('itemName', itemName);
 
     return this.http.get<PurchaseDate[]>(`${this.API_URL}/purchase-dates`, { params });
+  }
+
+  // NEW: Get purchase dates for multiple items
+  getItemsPurchaseDates(userId: string, itemNames: string[]): Observable<PurchaseDate[]> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('itemNames', itemNames.join(','));
+
+    return this.http.get<PurchaseDate[]>(`${this.API_URL}/items-purchase-dates`, { params });
   }
 }

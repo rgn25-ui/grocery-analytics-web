@@ -11,4 +11,5 @@ export interface PurchaseDate {
 purchaseDate: string;
 listName: string;
 quantity: number;
+itemName: string;  // NEW: Add item name
 }
