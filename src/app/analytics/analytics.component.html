@@ -1,0 +1,104 @@
+<div class="analytics-container">
+  <h1>Indkøbsanalyse</h1>
+
+  <!-- Search Section (User ID input removed) -->
+  <div class="search-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        placeholder="Søg efter vare..."
+        class="search-input">
+
+      <button
+        *ngIf="selectedItem"
+        (click)="clearSelection()"
+        class="clear-btn">
+        Ryd
+      </button>
+    </div>
+
+    <!-- Search Results Dropdown -->
+    <div class="search-results" *ngIf="searchResults.length > 0">
+      <div
+        *ngFor="let item of searchResults"
+        (click)="selectItem(item)"
+        class="search-result-item">
+        {{ item }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Henter data...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Analytics Display -->
+  <div class="analytics-content" *ngIf="analytics && !loading">
+    <h2>{{ analytics.itemName }}</h2>
+
+    <!-- Frequency Cards -->
+    <div class="frequency-grid">
+      <div class="frequency-card">
+        <div class="card-label">Sidste uge</div>
+        <div class="card-value">{{ analytics.lastWeek }}</div>
+      </div>
+
+      <div class="frequency-card">
+        <div class="card-label">Sidste måned</div>
+        <div class="card-value">{{ analytics.lastMonth }}</div>
+      </div>
+
+      <div class="frequency-card">
+        <div class="card-label">Sidste kvartal</div>
+        <div class="card-value">{{ analytics.lastQuarter }}</div>
+      </div>
+
+      <div class="frequency-card">
+        <div class="card-label">Sidste år</div>
+        <div class="card-value">{{ analytics.lastYear }}</div>
+      </div>
+
+      <div class="frequency-card highlight">
+        <div class="card-label">I alt</div>
+        <div class="card-value">{{ analytics.totalAllTime }}</div>
+      </div>
+    </div>
+
+    <!-- Purchase Dates List -->
+    <div class="purchase-dates-section" *ngIf="purchaseDates.length > 0">
+      <h3>Købsdatoer ({{ purchaseDates.length }})</h3>
+
+      <div class="dates-list">
+        <div
+          *ngFor="let purchase of purchaseDates"
+          class="date-item">
+          <div class="date-main">
+            <span class="date-text">{{ formatDate(purchase.purchaseDate) }}</span>
+            <span class="quantity-badge" *ngIf="purchase.quantity > 1">
+              {{ purchase.quantity }}x
+            </span>
+          </div>
+          <div class="date-list-name">{{ purchase.listName }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-dates" *ngIf="purchaseDates.length === 0">
+      <p>Ingen købsdatoer fundet for denne vare.</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!selectedItem && !loading">
+    <p>Søg efter en vare for at se indkøbsanalyse</p>
+  </div>
+</div>
