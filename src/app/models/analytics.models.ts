@@ -13,3 +13,9 @@ listName: string;
 quantity: number;
 itemName: string;  // NEW: Add item name
 }
+
+export interface TopItemStats {
+itemName: string;
+totalCount: number;
+lastPurchased: number;
+}

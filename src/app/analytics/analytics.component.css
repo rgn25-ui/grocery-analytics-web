@@ -22,23 +22,6 @@ h3 {
   font-size: 20px;
 }
 
-/* User ID Section */
-.user-id-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.user-input {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  margin-top: 10px;
-}
-
 /* Search Section */
 .search-section {
   position: relative;
@@ -62,11 +45,6 @@ h3 {
 .search-input:focus {
   outline: none;
   border-color: #2980b9;
-}
-
-.search-input:disabled {
-  background-color: #ecf0f1;
-  cursor: not-allowed;
 }
 
 .clear-btn {
@@ -141,44 +119,220 @@ h3 {
   border-left: 4px solid #e74c3c;
 }
 
-/* Frequency Grid */
-.frequency-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
+/* Top Items Section */
+.top-items-section {
   margin-bottom: 40px;
 }
 
-.frequency-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 25px;
+.top-items-section h2 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.section-description {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+  font-size: 16px;
+}
+
+.top-items-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.top-item {
+  background: white;
   border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
 }
 
-.frequency-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+.top-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #9b59b6);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
-.frequency-card.highlight {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+.top-item:hover::before {
+  transform: scaleX(1);
 }
 
-.card-label {
+.top-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #3498db;
+}
+
+.top-item:nth-child(1) {
+  background: linear-gradient(135deg, #fff8dc 0%, #ffffff 100%);
+}
+
+.top-item:nth-child(2) {
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+}
+
+.top-item:nth-child(3) {
+  background: linear-gradient(135deg, #ffe4d4 0%, #ffffff 100%);
+}
+
+.item-rank {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 36px;
+  font-weight: 900;
+  opacity: 0.1;
+  line-height: 1;
+}
+
+.top-item:nth-child(1) .item-rank {
+  color: #f39c12;
+  opacity: 0.3;
+  font-size: 42px;
+}
+
+.top-item:nth-child(2) .item-rank {
+  color: #95a5a6;
+  opacity: 0.3;
+  font-size: 42px;
+}
+
+.top-item:nth-child(3) .item-rank {
+  color: #cd7f32;
+  opacity: 0.3;
+  font-size: 42px;
+}
+
+.item-details {
+  position: relative;
+  z-index: 1;
+}
+
+.item-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-name::before {
+  content: '🛒';
+  font-size: 20px;
+}
+
+.top-item:nth-child(1) .item-name::before {
+  content: '🥇';
+}
+
+.top-item:nth-child(2) .item-name::before {
+  content: '🥈';
+}
+
+.top-item:nth-child(3) .item-name::before {
+  content: '🥉';
+}
+
+.item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-count {
+  font-size: 28px;
+  font-weight: 800;
+  color: #3498db;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.item-count::after {
+  content: 'gange';
   font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 500;
+  color: #7f8c8d;
 }
 
-.card-value {
-  font-size: 48px;
-  font-weight: bold;
+.item-separator {
+  display: none;
+}
+
+.item-last-purchased {
+  font-size: 13px;
+  color: #95a5a6;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.item-last-purchased::before {
+  content: '🕐';
+  font-size: 14px;
+}
+
+.item-arrow {
+  display: none;
+}
+
+/* Subtle Frequency Summary */
+.frequency-summary {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-left: 4px solid #3498db;
+}
+
+.frequency-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 20px;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.frequency-stat.highlight {
+  margin-left: auto;
+}
+
+.frequency-stat.highlight .stat-label {
+  color: #e74c3c;
+}
+
+.frequency-stat.highlight .stat-value {
+  color: #e74c3c;
+  font-size: 24px;
 }
 
 /* Matched Variants Section */
@@ -355,13 +509,13 @@ h3 {
     padding: 15px;
   }
 
-  .frequency-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+  .frequency-summary {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .card-value {
-    font-size: 36px;
+  .frequency-stat.highlight {
+    margin-left: 0;
   }
 
   h1 {
@@ -370,5 +524,21 @@ h3 {
 
   h2 {
     font-size: 22px;
+  }
+
+  .top-items-list {
+    grid-template-columns: 1fr;
+  }
+
+  .item-rank {
+    font-size: 28px !important;
+  }
+
+  .item-name {
+    font-size: 16px;
+  }
+
+  .item-count {
+    font-size: 24px;
   }
 }

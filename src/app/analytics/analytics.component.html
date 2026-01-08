@@ -1,7 +1,7 @@
 <div class="analytics-container">
   <h1>Indkøbsanalyse</h1>
 
-  <!-- Search Section (User ID input removed) -->
+  <!-- Search Section -->
   <div class="search-section">
     <div class="search-box">
       <input
@@ -41,11 +41,35 @@
     {{ error }}
   </div>
 
-  <!-- Analytics Display -->
-  <div class="analytics-content" *ngIf="analytics && !loading">
+  <!-- Top Items Leaderboard (shown by default) -->
+  <div class="top-items-section" *ngIf="showTopItems && !loading">
+    <h2>Top købte varer</h2>
+    <p class="section-description">Dine mest købte varer sorteret efter antal gange købt</p>
+
+    <div class="top-items-list">
+      <div
+        *ngFor="let item of topItems; let i = index"
+        class="top-item"
+        (click)="selectItem(item.itemName)">
+        <div class="item-rank">{{ i + 1 }}</div>
+        <div class="item-details">
+          <div class="item-name">{{ item.itemName }}</div>
+          <div class="item-meta">
+            <span class="item-count">{{ item.totalCount }} gange</span>
+            <span class="item-separator">•</span>
+            <span class="item-last-purchased">{{ formatRelativeTime(item.lastPurchased) }}</span>
+          </div>
+        </div>
+        <div class="item-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Item Analytics Display (shown when searching) -->
+  <div class="analytics-content" *ngIf="analytics && !loading && !showTopItems">
     <h2>{{ displayName }}</h2>
 
-    <!-- Matched Variants Section (NEW) -->
+    <!-- Matched Variants Section -->
     <div class="variants-section" *ngIf="matchedVariants.length > 1">
       <h3>Fundne varianter ({{ matchedVariants.length }})</h3>
       <p class="variants-instruction">Klik for at vælge/fravælge varianter:</p>
@@ -66,31 +90,27 @@
       </p>
     </div>
 
-    <!-- Frequency Cards -->
-    <div class="frequency-grid">
-      <div class="frequency-card">
-        <div class="card-label">Sidste uge</div>
-        <div class="card-value">{{ analytics.lastWeek }}</div>
+    <!-- Subtle Frequency Summary -->
+    <div class="frequency-summary">
+      <div class="frequency-stat">
+        <span class="stat-label">Sidste uge:</span>
+        <span class="stat-value">{{ analytics.lastWeek }}</span>
       </div>
-
-      <div class="frequency-card">
-        <div class="card-label">Sidste måned</div>
-        <div class="card-value">{{ analytics.lastMonth }}</div>
+      <div class="frequency-stat">
+        <span class="stat-label">Sidste måned:</span>
+        <span class="stat-value">{{ analytics.lastMonth }}</span>
       </div>
-
-      <div class="frequency-card">
-        <div class="card-label">Sidste kvartal</div>
-        <div class="card-value">{{ analytics.lastQuarter }}</div>
+      <div class="frequency-stat">
+        <span class="stat-label">Sidste kvartal:</span>
+        <span class="stat-value">{{ analytics.lastQuarter }}</span>
       </div>
-
-      <div class="frequency-card">
-        <div class="card-label">Sidste år</div>
-        <div class="card-value">{{ analytics.lastYear }}</div>
+      <div class="frequency-stat">
+        <span class="stat-label">Sidste år:</span>
+        <span class="stat-value">{{ analytics.lastYear }}</span>
       </div>
-
-      <div class="frequency-card highlight">
-        <div class="card-label">I alt</div>
-        <div class="card-value">{{ analytics.totalAllTime }}</div>
+      <div class="frequency-stat highlight">
+        <span class="stat-label">I alt:</span>
+        <span class="stat-value">{{ analytics.totalAllTime }}</span>
       </div>
     </div>
 
@@ -124,7 +144,7 @@
   </div>
 
   <!-- Empty State -->
-  <div class="empty-state" *ngIf="!selectedItem && !loading">
-    <p>Søg efter en vare for at se indkøbsanalyse</p>
+  <div class="empty-state" *ngIf="!selectedItem && !loading && topItems.length === 0">
+    <p>Ingen data tilgængelig endnu</p>
   </div>
 </div>

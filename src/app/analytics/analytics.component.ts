@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GroceryAnalyticsService } from '../services/grocery-analytics.service';
-import { ItemPurchaseAnalytics, PurchaseDate } from '../models/analytics.models';
+import { ItemPurchaseAnalytics, PurchaseDate, TopItemStats } from '../models/analytics.models';
 
 @Component({
 selector: 'app-analytics',
@@ -12,16 +12,19 @@ templateUrl: './analytics.component.html',
 styleUrls: ['./analytics.component.css']
 })
 export class AnalyticsComponent implements OnInit {
-userId: string = 'shared-user';  // Hardcoded!
+userId: string = 'shared-user';
 searchQuery: string = '';
 selectedItem: string = '';
-displayName: string = '';  // NEW: For showing search term + variant count
+displayName: string = '';
 
 searchResults: string[] = [];
-matchedVariants: string[] = [];  // All found variants
-selectedVariants: Set<string> = new Set();  // NEW: User-selected variants
+matchedVariants: string[] = [];
+selectedVariants: Set<string> = new Set();
 analytics: ItemPurchaseAnalytics | null = null;
 purchaseDates: PurchaseDate[] = [];
+
+topItems: TopItemStats[] = [];
+showTopItems: boolean = true;
 
 loading: boolean = false;
 error: string | null = null;
@@ -29,7 +32,19 @@ error: string | null = null;
 constructor(private analyticsService: GroceryAnalyticsService) {}
 
   ngOnInit(): void {
-    // No need to load from localStorage anymore
+    this.loadTopItems();
+  }
+
+  loadTopItems(): void {
+    this.analyticsService.getTopItems(this.userId, 50)
+      .subscribe({
+        next: (items) => {
+          this.topItems = items;
+        },
+        error: (err) => {
+          console.error('Top items error:', err);
+        }
+      });
   }
 
   onSearchInput(): void {
@@ -54,6 +69,7 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
     this.selectedItem = itemName;
     this.searchQuery = itemName;
     this.searchResults = [];
+    this.showTopItems = false;
     this.loadAnalytics();
   }
 
@@ -67,15 +83,11 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
     this.matchedVariants = [];
     this.selectedVariants.clear();
 
-    // First, get all matching variants
     this.analyticsService.searchItems(this.userId, this.selectedItem)
       .subscribe({
         next: (variants) => {
           this.matchedVariants = variants;
-          // By default, select all variants
           variants.forEach(v => this.selectedVariants.add(v));
-
-          // Then load analytics for selected variants
           this.loadAnalyticsData();
         },
         error: (err) => {
@@ -92,11 +104,9 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
       this.selectedVariants.add(variant);
     }
 
-    // Reload analytics with new selection
     if (this.selectedVariants.size > 0) {
       this.loadAnalyticsData();
     } else {
-      // If no variants selected, clear analytics
       this.analytics = null;
       this.purchaseDates = [];
     }
@@ -107,44 +117,41 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
   }
 
   private loadAnalyticsData(): void {
-  if (this.selectedVariants.size === 0) {
-    return;
+    if (this.selectedVariants.size === 0) {
+      return;
+    }
+
+    const selectedItems = Array.from(this.selectedVariants);
+
+    if (selectedItems.length === 1) {
+      this.displayName = selectedItems[0];
+    } else {
+      this.displayName = `${this.selectedItem} (${selectedItems.length} varianter)`;
+    }
+
+    this.analyticsService.getItemsFrequency(this.userId, selectedItems)
+      .subscribe({
+        next: (data) => {
+          this.analytics = data;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Analytics error:', err);
+          this.error = 'Kunne ikke hente data. Tjek din forbindelse.';
+          this.loading = false;
+        }
+      });
+
+    this.analyticsService.getItemsPurchaseDates(this.userId, selectedItems)
+      .subscribe({
+        next: (dates) => {
+          this.purchaseDates = dates;
+        },
+        error: (err) => {
+          console.error('Purchase dates error:', err);
+        }
+      });
   }
-
-  const selectedItems = Array.from(this.selectedVariants);
-
-  // Update display name based on selection
-  if (selectedItems.length === 1) {
-    this.displayName = selectedItems[0];
-  } else {
-    this.displayName = `${this.selectedItem} (${selectedItems.length} varianter)`;
-  }
-
-  // Load frequency analytics for selected variants
-  this.analyticsService.getItemsFrequency(this.userId, selectedItems)
-    .subscribe({
-      next: (data) => {
-        this.analytics = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Analytics error:', err);
-        this.error = 'Kunne ikke hente data. Tjek din forbindelse.';
-        this.loading = false;
-      }
-    });
-
-  // Load purchase dates for selected variants
-  this.analyticsService.getItemsPurchaseDates(this.userId, selectedItems)
-    .subscribe({
-      next: (dates) => {
-        this.purchaseDates = dates;
-      },
-      error: (err) => {
-        console.error('Purchase dates error:', err);
-      }
-    });
-}
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -157,6 +164,19 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
     });
   }
 
+  formatRelativeTime(timestamp: number): string {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 0) return 'I dag';
+    if (days === 1) return 'I går';
+    if (days < 7) return `${days} dage siden`;
+    if (days < 30) return `${Math.floor(days / 7)} uger siden`;
+    if (days < 365) return `${Math.floor(days / 30)} måneder siden`;
+    return `${Math.floor(days / 365)} år siden`;
+  }
+
   clearSelection(): void {
     this.selectedItem = '';
     this.searchQuery = '';
@@ -165,5 +185,6 @@ constructor(private analyticsService: GroceryAnalyticsService) {}
     this.searchResults = [];
     this.matchedVariants = [];
     this.selectedVariants.clear();
+    this.showTopItems = true;
   }
 }

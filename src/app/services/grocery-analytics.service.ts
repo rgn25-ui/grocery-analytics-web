@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ItemPurchaseAnalytics, PurchaseDate } from '../models/analytics.models';
+import { ItemPurchaseAnalytics, PurchaseDate, TopItemStats } from '../models/analytics.models';
 
 @Injectable({
 providedIn: 'root'
@@ -51,5 +51,14 @@ constructor(private http: HttpClient) {}
       .set('itemNames', itemNames.join(','));
 
     return this.http.get<PurchaseDate[]>(`${this.API_URL}/items-purchase-dates`, { params });
+  }
+
+  // NEW: Get top items
+  getTopItems(userId: string, limit: number = 50): Observable<TopItemStats[]> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('limit', limit.toString());
+
+    return this.http.get<TopItemStats[]>(`${this.API_URL}/top-items`, { params });
   }
 }
